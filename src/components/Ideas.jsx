@@ -1,30 +1,53 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import { useTheme } from './ThemeContext'
 
-const TAGS = ['Obby', 'Tycoon', 'Simulator', 'Roleplay', 'Horror', 'Story', 'PvP']
+const TAGS = ['All','Obby', 'Tycoon', 'Simulator', 'Roleplay', 'Horror', 'Story', 'PvP']
 
 export default function Ideas() {
   const [ideas, setIdeas] = useState([])
   const [q, setQ] = useState('')
   const [tag, setTag] = useState('All')
+  const [difficulty, setDifficulty] = useState('')
+  const navigate = useNavigate()
+  const { level } = useTheme() || { level: 'Beginner' }
   const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
 
   useEffect(() => {
     fetch(`${baseUrl}/api/ideas`).then(r=>r.json()).then(setIdeas)
   }, [])
 
-  const filtered = ideas.filter(i => {
-    const matchQ = !q || (i.title + ' ' + (i.concept||'')).toLowerCase().includes(q.toLowerCase())
-    const matchTag = tag==='All' || i.tags?.includes(tag)
-    return matchQ && matchTag
-  })
+  const filtered = useMemo(() => {
+    let data = ideas
+    if (q) {
+      const ql = q.toLowerCase()
+      data = data.filter(i => (i.title + ' ' + (i.concept||'')).toLowerCase().includes(ql))
+    }
+    if (tag !== 'All') {
+      data = data.filter(i => i.tags?.includes(tag))
+    }
+    if (difficulty) {
+      data = data.filter(i => i.difficulty?.toLowerCase() === difficulty.toLowerCase())
+    }
+    // prioritize recommendedLevel == level
+    data = [...data].sort((a,b)=> (b.recommendedLevel===level) - (a.recommendedLevel===level))
+    return data
+  }, [ideas, q, tag, difficulty, level])
 
   return (
     <div className="px-6 md:px-10 pt-6 pb-28">
-      <h2 className="text-2xl font-extrabold text-white">Game Ideas</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-extrabold text-white">Game Ideas</h2>
+        <select value={difficulty} onChange={e=>setDifficulty(e.target.value)} className="bg-slate-900/70 border border-white/10 text-slate-200 rounded-xl px-2 py-1 text-sm">
+          <option value="">All Levels</option>
+          <option>Beginner</option>
+          <option>Intermediate</option>
+          <option>Advanced</option>
+        </select>
+      </div>
 
       <div className="mt-4 flex items-center gap-2 overflow-x-auto pb-2">
-        <button onClick={()=>setTag('All')} className={`px-3 py-1.5 rounded-full text-sm ${tag==='All'?'bg-cyan-500 text-white':'bg-slate-800/70 text-slate-200'}`}>All</button>
         {TAGS.map(t => (
           <button key={t} onClick={()=>setTag(t)} className={`px-3 py-1.5 rounded-full text-sm ${tag===t?'bg-cyan-500 text-white':'bg-slate-800/70 text-slate-200'}`}>{t}</button>
         ))}
@@ -36,7 +59,7 @@ export default function Ideas() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
         {filtered.map((idea) => (
-          <motion.div key={idea.id} whileHover={{ scale: 1.02 }} className="rounded-2xl overflow-hidden bg-slate-900/70 border border-white/10">
+          <motion.button onClick={()=>navigate(`/ideas/${idea.id}`)} key={idea.id} whileHover={{ scale: 1.02 }} className="text-left rounded-2xl overflow-hidden bg-slate-900/70 border border-white/10">
             <div className="h-36 bg-gradient-to-br from-indigo-600 to-fuchsia-600" />
             <div className="p-4">
               <div className="text-white font-bold">{idea.title}</div>
@@ -47,7 +70,7 @@ export default function Ideas() {
                 ))}
               </div>
             </div>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
     </div>

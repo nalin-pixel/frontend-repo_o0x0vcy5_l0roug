@@ -1,7 +1,9 @@
-import { Sparkles, Rocket, Shuffle } from 'lucide-react'
+import { Sparkles, Rocket, Shuffle, Settings as SettingsIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 export default function HomeScreen({ onQuick }) {
+  const navigate = useNavigate()
   const buttons = [
     { key: 'idea', label: 'New Game Idea', icon: Sparkles, color: 'from-purple-500 to-pink-500' },
     { key: 'earn', label: 'Earn Robux Plan', icon: Rocket, color: 'from-cyan-500 to-blue-500' },
@@ -9,17 +11,22 @@ export default function HomeScreen({ onQuick }) {
   ]
 
   const feed = [
-    { title: 'Best idea of the week', tag: 'Tycoon', color: 'bg-purple-500' },
-    { title: 'New earning strategy', tag: 'Gamepasses', color: 'bg-cyan-500' },
-    { title: 'Featured 3D design', tag: 'Lobby', color: 'bg-emerald-500' },
+    { title: 'Best idea of the week', tag: 'Tycoon', color: 'bg-purple-500', link: '/ideas/idea-tycoon-pets' },
+    { title: 'New earning strategy', tag: 'Gamepasses', color: 'bg-cyan-500', link: '/paths/path-gamepasses' },
+    { title: 'Featured 3D design', tag: 'Lobby', color: 'bg-emerald-500', link: '/worlds/world-floating-islands' },
   ]
 
   return (
     <div className="pb-28">
       {/* Greeting */}
-      <div className="px-6 md:px-10 pt-6">
-        <h2 className="text-2xl md:text-3xl font-extrabold text-white">Hi, Builder!</h2>
-        <p className="text-slate-300 mt-1">Welcome back, Creator!</p>
+      <div className="px-6 md:px-10 pt-6 flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-extrabold text-white">Hi, Builder!</h2>
+          <p className="text-slate-300 mt-1">Welcome back, Creator!</p>
+        </div>
+        <button onClick={()=>navigate('/settings')} className="p-2 rounded-xl bg-slate-900/70 border border-white/10 text-slate-200 hover:text-white">
+          <SettingsIcon size={20} />
+        </button>
       </div>
 
       {/* Daily highlight */}
@@ -62,17 +69,18 @@ export default function HomeScreen({ onQuick }) {
       {/* Feed */}
       <div className="px-6 md:px-10 mt-6 space-y-3">
         {feed.map((item, i) => (
-          <motion.div
+          <motion.button
             key={i}
             whileHover={{ scale: 1.01 }}
-            className="flex items-center gap-4 rounded-2xl p-4 bg-slate-900/70 border border-white/10"
+            onClick={()=> navigate(item.link)}
+            className="text-left flex items-center gap-4 rounded-2xl p-4 bg-slate-900/70 border border-white/10"
           >
             <div className={`w-16 h-16 rounded-xl ${item.color} shadow-lg`} />
             <div className="flex-1">
               <div className="text-white font-semibold">{item.title}</div>
               <div className="text-xs text-slate-300 mt-1">Tag: {item.tag}</div>
             </div>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
     </div>

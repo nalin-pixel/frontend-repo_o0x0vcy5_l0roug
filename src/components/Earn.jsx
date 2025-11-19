@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
 
 export default function Earn() {
   const [paths, setPaths] = useState([])
   const baseUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
+  const navigate = useNavigate()
 
   useEffect(() => {
-    fetch(`${baseUrl}/api/earning-paths`).then(r=>r.json()).then(setPaths)
+    fetch(`${baseUrl}/api/paths`).then(r=>r.json()).then(setPaths)
   }, [])
 
   return (
@@ -16,14 +18,14 @@ export default function Earn() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-5">
         {paths.map((p) => (
-          <motion.div key={p.id} whileHover={{ scale: 1.02 }} className="rounded-2xl p-4 bg-slate-900/70 border border-white/10">
+          <motion.button key={p.id} onClick={()=>navigate(`/paths/${p.id}`)} whileHover={{ scale: 1.02 }} className="text-left rounded-2xl p-4 bg-slate-900/70 border border-white/10">
             <div className="h-36 rounded-xl bg-gradient-to-br from-teal-500 to-blue-600" />
             <div className="mt-3 text-white font-bold">{p.title}</div>
-            <p className="text-sm text-slate-300 mt-1 line-clamp-2">{p.overview}</p>
+            <p className="text-sm text-slate-300 mt-1 line-clamp-2">{p.description}</p>
             <ul className="mt-2 text-sm text-slate-300 list-disc pl-5 space-y-1">
-              {p.steps?.slice(0,3).map((s,i)=> <li key={i}>{s}</li>)}
+              {p.steps?.slice(0,3).map((s)=> <li key={s.stepNumber}><b className="text-slate-200">{s.title}:</b> {s.explanation}</li>)}
             </ul>
-          </motion.div>
+          </motion.button>
         ))}
       </div>
     </div>
